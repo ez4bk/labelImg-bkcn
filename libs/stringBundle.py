@@ -16,16 +16,16 @@ try:
 except ImportError:
     if sys.version_info.major >= 3:
         import sip
+
         sip.setapi('QVariant', 2)
     from PyQt4.QtCore import *
 
 
 class StringBundle:
-
     __create_key = object()
 
     def __init__(self, create_key, locale_str):
-        assert(create_key == StringBundle.__create_key), "StringBundle must be created using StringBundle.getBundle"
+        assert (create_key == StringBundle.__create_key), "StringBundle must be created using StringBundle.getBundle"
         self.id_to_message = {}
         paths = self.__create_lookup_fallback_list(locale_str)
         for path in paths:
@@ -35,8 +35,9 @@ class StringBundle:
     def get_bundle(cls, locale_str=None):
         if locale_str is None:
             try:
-                locale_str = locale.getdefaultlocale()[0] if locale.getdefaultlocale() and len(
-                    locale.getdefaultlocale()) > 0 else os.getenv('LANG')
+                # locale_str = locale.getdefaultlocale()[0] if locale.getdefaultlocale() and len(
+                #     locale.getdefaultlocale()) > 0 else os.getenv('LANG')
+                locale_str = 'zh-CN'
             except:
                 print('Invalid locale')
                 locale_str = 'en'
@@ -44,10 +45,11 @@ class StringBundle:
         return StringBundle(cls.__create_key, locale_str)
 
     def get_string(self, string_id):
-        assert(string_id in self.id_to_message), "Missing string id : " + string_id
+        assert (string_id in self.id_to_message), "Missing string id : " + string_id
         return self.id_to_message[string_id]
 
-    def __create_lookup_fallback_list(self, locale_str):
+    @staticmethod
+    def __create_lookup_fallback_list(locale_str):
         result_paths = []
         base_path = ":/strings"
         result_paths.append(base_path)
@@ -67,7 +69,6 @@ class StringBundle:
             if f.open(QIODevice.ReadOnly | QFile.Text):
                 text = QTextStream(f)
                 text.setCodec("UTF-8")
-
             while not text.atEnd():
                 line = ustr(text.readLine())
                 key_value = line.split(PROP_SEPERATOR)
