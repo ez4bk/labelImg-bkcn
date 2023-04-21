@@ -101,7 +101,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.cur_img_idx = 0
         self.img_count = len(self.m_img_list)
 
-        self.model_file_path = ''
+        if settings.get(SETTING_MODEL_FILE_PATH, '') == '':
+            self.model_file_path = None
+        else:
+            self.model_file_path = settings.get(SETTING_MODEL_FILE_PATH, None)
 
         # Whether we need to save or not.
         self.dirty = False
@@ -131,6 +134,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Create a widget for using default label
         self.use_default_label_checkbox = QCheckBox(get_str('useDefaultLabel'))
         self.use_default_label_checkbox.setChecked(False)
+        self.use_default_label_checkbox.stateChanged.connect(self.button_state)
         self.default_label_combo_box = DefaultLabelComboBox(self, items=self.label_hist)
 
         use_default_label_qhbox_layout = QHBoxLayout()
@@ -659,6 +663,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.file_path = None
         self.image_data = None
         self.label_file = None
+        self.model_file_path = None
         self.canvas.reset_state()
         self.label_coordinates.clear()
         self.combo_box.cb.clear()
@@ -1283,6 +1288,11 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             settings[SETTING_LAST_OPEN_DIR] = ''
 
+        if self.model_file_path and os.path.exists(self.model_file_path):
+            settings[SETTING_MODEL_FILE_PATH] = self.model_file_path
+        else:
+            settings[SETTING_MODEL_FILE_PATH] = ''
+
         settings[SETTING_AUTO_SAVE] = self.auto_saving.isChecked()
         settings[SETTING_SINGLE_CLASS] = self.single_class_mode.isChecked()
         settings[SETTING_PAINT_LABEL] = self.display_label_option.isChecked()
@@ -1489,9 +1499,18 @@ class MainWindow(QMainWindow, WindowMixin):
             if isinstance(filename, (tuple, list)):
                 filename = filename[0]
         self.model_file_path = filename
+        self.settings['model_file_path'] = self.model_file_path
 
     def train_model(self, _value=False):
-        return
+        if not self.may_continue():
+            return
+        if self.model_file_path is None:
+            return
+        if self.model_file_path is not None:
+            if self.file_path is not None:
+                self.label_file.train_model(self.model_file_path, self.file_path)
+
+        os.system('yolov5 train --batch-size -1 --epochs 32 --data data.yaml --weights yolov5s.pt')
 
     def save_file(self, _value=False):
         if self.default_save_dir is not None and len(ustr(self.default_save_dir)):
