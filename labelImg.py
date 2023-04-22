@@ -9,6 +9,9 @@ import sys
 import webbrowser as wb
 from functools import partial
 
+from libs.trainModel import TrainModel
+from libs.train_set_param import TrainSetParam
+
 try:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
@@ -934,7 +937,7 @@ class MainWindow(QMainWindow, WindowMixin):
             print('Image:{0} -> Annotation:{1}'.format(self.file_path, annotation_file_path))
             return True
         except LabelFileError as e:
-            self.error_message(u'Error saving label data', u'<b>%s</b>' % e)
+            self.error_message(u'保存数据出错', u'<b>%s</b>' % e)
             return False
 
     def copy_selected_shape(self):
@@ -1138,9 +1141,9 @@ class MainWindow(QMainWindow, WindowMixin):
                 try:
                     self.label_file = LabelFile(unicode_file_path)
                 except LabelFileError as e:
-                    self.error_message(u'Error opening file',
+                    self.error_message(u'打开文件错误',
                                        (u"<p><b>%s</b></p>"
-                                        u"<p>Make sure <i>%s</i> is a valid label file.")
+                                        u"<p>请确保<i>%s</i>是标签文件")
                                        % (e, unicode_file_path))
                     self.status("Error reading %s" % unicode_file_path)
 
@@ -1161,9 +1164,9 @@ class MainWindow(QMainWindow, WindowMixin):
             else:
                 image = QImage.fromData(self.image_data)
             if image.isNull():
-                self.error_message(u'Error opening file',
-                                   u"<p>Make sure <i>%s</i> is a valid image file." % unicode_file_path)
-                self.status("Error reading %s" % unicode_file_path)
+                self.error_message(u'打开文件错误',
+                                   u"<p>请确保<i>%s</i>是图片文件" % unicode_file_path)
+                self.status("读取%s时发生错误" % unicode_file_path)
                 return False
             self.status("Loaded %s" % os.path.basename(unicode_file_path))
             self.image = image
@@ -1498,6 +1501,8 @@ class MainWindow(QMainWindow, WindowMixin):
         if filename:
             if isinstance(filename, (tuple, list)):
                 filename = filename[0]
+        else:
+            return
         self.model_file_path = filename
         self.settings['model_file_path'] = self.model_file_path
 
@@ -1505,12 +1510,32 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.may_continue():
             return
         if self.model_file_path is None:
+            self.error_message('错误', '请先选择模型文件')
             return
-        if self.model_file_path is not None:
-            if self.file_path is not None:
-                self.label_file.train_model(self.model_file_path, self.file_path)
 
-        os.system('yolov5 train --batch-size -1 --epochs 32 --data data.yaml --weights yolov5s.pt')
+        set_train_param = TrainSetParam(self)
+        set_train_param.exec_()
+        if not set_train_param.batchSizeLine.text():
+            self.error_message('错误', '请输入训练规模')
+            return
+        if not set_train_param.epochsLine.text():
+            self.error_message('错误', '请输入训练轮数')
+            return
+        if not set_train_param.yamlPathLine.text() or not os.path.exists(set_train_param.yamlPathLine.text()):
+            self.error_message('错误', '请输入正确的yaml文件路径')
+            return
+
+        batch_size = int(set_train_param.batchSizeLine.text())
+        epochs = int(set_train_param.epochsLine.text())
+        yaml_file_path = set_train_param.yamlPathLine.text()
+        try:
+            train = TrainModel(parent=self, batch_size=batch_size, epochs=epochs,
+                               data=yaml_file_path, weights=self.model_file_path)
+            # self.queue_event(partial(train.run))
+            train.write_yaml_file()
+        except AssertionError as e:
+            print(e)
+            return
 
     def save_file(self, _value=False):
         if self.default_save_dir is not None and len(ustr(self.default_save_dir)):
@@ -1599,7 +1624,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def discard_changes_dialog(self):
         yes, no, cancel = QMessageBox.Yes, QMessageBox.No, QMessageBox.Cancel
-        msg = u'You have unsaved changes, would you like to save them and proceed?\nClick "No" to undo all changes.'
+        msg = u'你有未保存的更改，是否保存并继续？\n点击“No”取消所有更改'
         return QMessageBox.warning(self, u'Attention', msg, yes | no | cancel)
 
     def error_message(self, title, message):

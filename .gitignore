@@ -45,3 +45,6 @@ tmp.*
 # Project files
 /data/steel-waste/
 *.docx
+/data/runs
+/runs
+*/runs
