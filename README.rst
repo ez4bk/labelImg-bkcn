@@ -203,29 +203,8 @@ How to contribute
 
 Send a pull request
 
-License
+Original License
 ~~~~~~~
 `Free software: MIT license <https://github.com/tzutalin/labelImg/blob/master/LICENSE>`_
 
 Citation: Tzutalin. LabelImg. Git code (2015). https://github.com/tzutalin/labelImg
-
-Related and additional tools
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-1. `Label Studio <https://github.com/heartexlabs/label-studio>`__ to label images, text, audio, video and time-series data for machine learning and AI
-2. `ImageNet Utils <https://github.com/tzutalin/ImageNet_Utils>`__ to
-   download image, create a label text for machine learning, etc
-3. `Use Docker to run labelImg <https://hub.docker.com/r/tzutalin/py2qt4>`__
-4. `Generating the PASCAL VOC TFRecord files <https://github.com/tensorflow/models/blob/4f32535fe7040bb1e429ad0e3c948a492a89482d/research/object_detection/g3doc/preparing_inputs.md#generating-the-pascal-voc-tfrecord-files>`__
-5. `App Icon based on Icon by Nick Roach (GPL) <https://www.elegantthemes.com/>`__
-6. `Setup python development in vscode <https://tzutalin.blogspot.com/2019/04/set-up-visual-studio-code-for-python-in.html>`__
-7. `The link of this project on iHub platform <https://code.ihub.org.cn/projects/260/repository/labelImg>`__
-8. `Convert annotation files to CSV format or format for Google Cloud AutoML <https://github.com/tzutalin/labelImg/tree/master/tools>`__
-
-
-
-Stargazers over time
-~~~~~~~~~~~~~~~~~~~~
-
-.. image:: https://starchart.cc/tzutalin/labelImg.svg
-
