@@ -4,24 +4,21 @@ LabelImg
 .. image:: https://img.shields.io/pypi/v/labelimg.svg
         :target: https://pypi.python.org/pypi/labelimg
 
-.. image:: https://img.shields.io/github/workflow/status/tzutalin/labelImg/Package?style=for-the-badge   :alt: GitHub Workflow Status
-
 .. image:: https://img.shields.io/badge/lang-en-blue.svg
         :target: https://github.com/tzutalin/labelImg
 
 .. image:: https://img.shields.io/badge/lang-zh-green.svg
         :target: https://github.com/tzutalin/labelImg/blob/master/readme/README.zh.rst
 
-.. image:: https://img.shields.io/badge/lang-jp-green.svg
-        :target: https://github.com/tzutalin/labelImg/blob/master/readme/README.jp.rst
+LabelImg 是图形标注工具，用python和PyQt写成。
 
-.. image:: /resources/icons/app.png
-    :width: 200px
-    :align: center
+作为原LabelImg的分支，这个版本进行了更多私人化的定制，此README文件也进行了相应的更改。
 
-LabelImg 是影像標註工具，它是用python 和 QT 寫成的.
+此版本的LabelImg支持对 fcakyon/YOLOv5 模型的训练，使用中选择YAML文件和权重PT文件后即可进行训练。
+请将YAML文件和权重文件放在跟目录 data 文件夹内。
+YAML文件会根据图片和标注文件自动修改/生成。
 
-支持的儲存格式包括PASCAL VOC format, YOLO, createML.
+支持的存储文件包括 PASCAL VOC、YOLO、createML。
 
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
@@ -29,167 +26,101 @@ LabelImg 是影像標註工具，它是用python 和 QT 寫成的.
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo.jpg
      :alt: Demo Image
 
-`展示影片 <https://youtu.be/p0nR2YsCY_U>`__
 
-安裝
+安装
 ------------------
 
 
-透過編譯原始碼
+从源代码进行Build
 ~~~~~~~~~~~~~~~~~
 
 Linux/Ubuntu/Mac 需要 Python 和 `PyQt <https://pypi.org/project/PyQt5/>`__
 
-Ubuntu Linux
-^^^^^^^^^^^^
-
+macOS (M1 - 此分支在此环境中开发)
+^^^^^
 Python 3 + Qt5
 
 .. code:: shell
 
-    sudo apt-get install pyqt5-dev-tools
-    sudo pip3 install -r requirements/requirements-linux-python3.txt
+    # 右击终端，选择"使用Rosetta打开"后，重启终端
+    /usr/bin/python -m venv venv # 创建虚拟环境 env
+    source env/bin/activate # 激活虚拟环境
+    pip install pyqt5 lxml # 通过pip安装qt和lxml
+    # 必须使用通过Rosetta打开的终端安装pyqt5，否则M1平台的Mac会默认使用arm64架构的python进行安装，而pyqt5目前不支持arm64架构
+    # 目前只能通过类似办法使用PyQt5，PyQt6已经支持arm64架构，但是labelImg目前不支持PyQt6
+
     make qt5py3
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-macOS
+macOS (Intel)
 ^^^^^
 
 Python 3 + Qt5
 
 .. code:: shell
 
-    brew install qt  # Install qt-5.x.x by Homebrew
-    brew install libxml2
-
-    or using pip
-
-    pip3 install pyqt5 lxml # Install qt and lxml by pip
+    pip3 install pyqt5 lxml
 
     make qt5py3
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-
-Python 3 Virtualenv (推薦方法)
-
-Virtualenv 可以避免版本和相依性問題
+配置完环境后，进入项目根目录，执行以下命令即可启动labelImg
 
 .. code:: shell
 
-    brew install python3
-    pip3 install pipenv
-    pipenv run pip install pyqt5==5.15.2 lxml
-    pipenv run make qt5py3
-    pipenv run python3 labelImg.py
-    [Optional] rm -rf build dist; python setup.py py2app -A;mv "dist/labelImg.app" /Applications
-
-
-Windows
-^^^^^^^
-
-安裝 `Python <https://www.python.org/downloads/windows/>`__,
-`PyQt5 <https://www.riverbankcomputing.com/software/pyqt/download5>`__
-和 `install lxml <http://lxml.de/installation.html>`__.
-
-安裝並到 `labelImg <#labelimg>`__ 目錄
-
-.. code:: shell
-
-    pyrcc4 -o libs/resources.py resources.qrc
-    For pyqt5, pyrcc5 -o libs/resources.py resources.qrc
-
-    python labelImg.py
-    python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
-
-Windows + Anaconda
-^^^^^^^^^^^^^^^^^^
-
-下載並安裝 `Anaconda <https://www.anaconda.com/download/#download>`__ (Python 3+)
-
-打開 Anaconda Prompt 然後到 `labelImg <#labelimg>`__ 目錄
-
-.. code:: shell
-
-    conda install pyqt=5
-    conda install -c anaconda lxml
     pyrcc5 -o libs/resources.py resources.qrc
+
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-Get from PyPI but only python3.0 or above
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+若要打包成可执行EXE文件，执行以下命令
 
 .. code:: shell
 
-    pip3 install labelImg
-    labelImg
-    labelImg [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+    Install pyinstaller and execute:
 
-
-Use Docker
-~~~~~~~~~~~~~~~~~
-.. code:: shell
-
-    docker run -it \
-    --user $(id -u) \
-    -e DISPLAY=unix$DISPLAY \
-    --workdir=$(pwd) \
-    --volume="/home/$USER:/home/$USER" \
-    --volume="/etc/group:/etc/group:ro" \
-    --volume="/etc/passwd:/etc/passwd:ro" \
-    --volume="/etc/shadow:/etc/shadow:ro" \
-    --volume="/etc/sudoers.d:/etc/sudoers.d:ro" \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
-    tzutalin/py2qt4
-
-    make qt4py2;./labelImg.py
-
-`你可以參考影片  <https://youtu.be/nw1GexJzbCI>`__
+    pip install pyinstaller
+    pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -F -n "labelImg" -c labelImg.py -p ./libs -p ./
 
 
 使用方法
 -----
 
-你可以先產生標籤
+打标签
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-修改這個檔案
+修改此档案
 `data/predefined\_classes.txt <https://github.com/tzutalin/labelImg/blob/master/data/predefined_classes.txt>`__
 
-快捷鍵
+快捷键
 ~~~~~~~
 
 +--------------------+--------------------------------------------+
-| Ctrl + u           | 讀取所有影像從每個目錄                     |
+| Ctrl + u           | 从目录读取所有图片                            |
 +--------------------+--------------------------------------------+
-| Ctrl + r           | 改變標示結果的存檔目錄                     |
+| Ctrl + r           | 更改标签文件的保存路径                         |
 +--------------------+--------------------------------------------+
-| Ctrl + s           | 存檔                                       |
+| Ctrl + s           | 保存                                       |
 +--------------------+--------------------------------------------+
-| Ctrl + d           | 複製目前的標籤和物件的區塊                 |
+| Ctrl + d           | 复制当前标签和方框                            |
 +--------------------+--------------------------------------------+
-| Ctrl + Shift + d   | 刪除目前影像                               |
+| Ctrl + Shift + d   | 刪除当前图片                                 |
 +--------------------+--------------------------------------------+
-| Space              | 標示目前照片已經處理過                     |
+| Space              | 标注当前图片为已认证                           |
 +--------------------+--------------------------------------------+
-| w                  | 產生新的物件區塊                           |
+| w                  | 创建新的方框                                 |
 +--------------------+--------------------------------------------+
-| d                  | 下張影像                                   |
+| d                  | 下一张图片                                   |
 +--------------------+--------------------------------------------+
-| a                  | 上張影像                                   |
+| a                  | 上一张图片                                   |
 +--------------------+--------------------------------------------+
-| del                | 刪除所選的物件區塊                         |
+| del                | 刪除所选方框                                 |
 +--------------------+--------------------------------------------+
-| Ctrl++             | 放大影像                                   |
+| Ctrl++             | 放大图片                                    |
 +--------------------+--------------------------------------------+
-| Ctrl--             | 縮小影像                                   |
+| Ctrl--             | 缩小图片                                    |
 +--------------------+--------------------------------------------+
-| ↑→↓←               | 移動所選的物件區塊                         |
+| ↑→↓←               | 移动所选方框                                 |
 +--------------------+--------------------------------------------+
-
-如何貢獻
-~~~~~~~~~~~~~~~~~
-
-歡迎上傳程式碼直接貢獻
