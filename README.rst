@@ -8,7 +8,7 @@ About This LabelImg
         :target: https://github.com/ez4bk/labelImg-bkcn
 
 .. image:: https://img.shields.io/badge/lang-zh-green.svg
-        :target: https://github.com/ez4bk/labelImg-bkcn/readme/README.zh.rst
+        :target: https://github.com/ez4bk/labelImg-bkcn/blob/master/readme/README.zh.rst
 
 LabelImg is a graphical image annotation tool.
 
