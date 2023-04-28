@@ -5,10 +5,10 @@ LabelImg
         :target: https://pypi.python.org/pypi/labelimg
 
 .. image:: https://img.shields.io/badge/lang-en-blue.svg
-        :target: https://github.com/tzutalin/labelImg
+        :target: https://github.com/ez4bk/labelImg-bkcn
 
 .. image:: https://img.shields.io/badge/lang-zh-green.svg
-        :target: https://github.com/tzutalin/labelImg/blob/master/readme/README.zh.rst
+        :target: https://github.com/ez4bk/labelImg-bkcn/readme/README.zh.rst
 
 LabelImg 是图形标注工具，用python和PyQt写成。
 
