@@ -50,3 +50,6 @@ tmp.*
 data/*.yaml
 data/*.pt
 *.ui
+/图片合集/
+/Archive.zip
+/labelImg.spec
