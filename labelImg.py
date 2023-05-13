@@ -94,7 +94,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Save as Pascal voc xml
         self.default_save_dir = default_save_dir
-        self.label_file_format = settings.get(SETTING_LABEL_FILE_FORMAT, LabelFileFormat.PASCAL_VOC)
+        self.label_file_format = settings.get(SETTING_LABEL_FILE_FORMAT, LabelFileFormat.YOLO)
 
         # For loading all image under a directory
         self.m_img_list = []
@@ -103,11 +103,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.last_open_dir = None
         self.cur_img_idx = 0
         self.img_count = len(self.m_img_list)
-
-        if settings.get(SETTING_MODEL_FILE_PATH, '') == '':
-            self.model_file_path = None
-        else:
-            self.model_file_path = settings.get(SETTING_MODEL_FILE_PATH, None)
 
         # Whether we need to save or not.
         self.dirty = False
@@ -250,8 +245,8 @@ class MainWindow(QMainWindow, WindowMixin):
 
         save = action(get_str('save'), self.save_file,
                       'Ctrl+S', 'save', get_str('saveDetail'), enabled=False)
-        open_model = action(get_str('openModel'), self.open_model,
-                            'Ctrl+M', 'open', get_str('openModelDetail'))
+        # open_model = action(get_str('openModel'), self.open_model,
+        #                     'Ctrl+M', 'open', get_str('openModelDetail'))
         train_model = action(get_str('trainModel'), self.train_model,
                              'Ctrl+T', 'train', get_str('trainModelDetail'))
 
@@ -399,7 +394,7 @@ class MainWindow(QMainWindow, WindowMixin):
                               resetAll=reset_all, deleteImg=delete_image,
                               lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
                               createMode=create_mode, editMode=edit_mode, advancedMode=advanced_mode,
-                              open_model=open_model, train_model=train_model,
+                              train_model=train_model,
                               shapeLineColor=shape_line_color, shapeFillColor=shape_fill_color,
                               zoom=zoom, zoomIn=zoom_in, zoomOut=zoom_out, zoomOrg=zoom_org,
                               fitWindow=fit_window, fitWidth=fit_width,
@@ -470,7 +465,7 @@ class MainWindow(QMainWindow, WindowMixin):
             open, open_dir, change_save_dir, open_next_image, open_prev_image, verify, save, save_format, None, create,
             copy, delete, None,
             zoom_in, zoom, zoom_out, fit_window, fit_width, None,
-            light_brighten, light, light_darken, light_org, open_model, train_model)
+            light_brighten, light, light_darken, light_org, train_model)
 
         self.actions.advanced = (
             open, open_dir, change_save_dir, open_next_image, open_prev_image, save, save_format, None,
@@ -588,14 +583,15 @@ class MainWindow(QMainWindow, WindowMixin):
             LabelFile.suffix = JSON_EXT
 
     def change_format(self):
-        if self.label_file_format == LabelFileFormat.PASCAL_VOC:
-            self.set_format(FORMAT_YOLO)
-        elif self.label_file_format == LabelFileFormat.YOLO:
-            self.set_format(FORMAT_CREATEML)
-        elif self.label_file_format == LabelFileFormat.CREATE_ML:
-            self.set_format(FORMAT_PASCALVOC)
-        else:
-            raise ValueError('Unknown label file format.')
+        # if self.label_file_format == LabelFileFormat.PASCAL_VOC:
+        #     self.set_format(FORMAT_YOLO)
+        # elif self.label_file_format == LabelFileFormat.YOLO:
+        #     self.set_format(FORMAT_CREATEML)
+        # elif self.label_file_format == LabelFileFormat.CREATE_ML:
+        #     self.set_format(FORMAT_PASCALVOC)
+        # else:
+        #     raise ValueError('Unknown label file format.')
+        self.set_format(FORMAT_YOLO)
         self.set_dirty()
 
     def no_shapes(self):
@@ -666,7 +662,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.file_path = None
         self.image_data = None
         self.label_file = None
-        self.model_file_path = None
         self.canvas.reset_state()
         self.label_coordinates.clear()
         self.combo_box.cb.clear()
@@ -1290,10 +1285,6 @@ class MainWindow(QMainWindow, WindowMixin):
             settings[SETTING_LAST_OPEN_DIR] = self.last_open_dir
         else:
             settings[SETTING_LAST_OPEN_DIR] = ''
-
-        if self.model_file_path and os.path.exists(self.model_file_path):
-            settings[SETTING_MODEL_FILE_PATH] = self.model_file_path
-        else:
             settings[SETTING_MODEL_FILE_PATH] = ''
 
         settings[SETTING_AUTO_SAVE] = self.auto_saving.isChecked()
@@ -1491,27 +1482,27 @@ class MainWindow(QMainWindow, WindowMixin):
             self.img_count = 1
             self.load_file(filename)
 
-    def open_model(self, _value=False):
-        if not self.may_continue():
-            return
-        path = os.path.dirname(ustr(self.file_path)) if self.file_path else '.'
-        formats = ['*.pt']
-        filters = "Model Files (Yolo Only %s)" % ' '.join(formats + ['*%s' % LabelFile.suffix])
-        filename, _ = QFileDialog.getOpenFileName(self, '%s - Choose model file' % __appname__, path, filters)
-        if filename:
-            if isinstance(filename, (tuple, list)):
-                filename = filename[0]
-        else:
-            return
-        self.model_file_path = filename
-        self.settings['model_file_path'] = self.model_file_path
+    # def open_model(self, _value=False):
+    #     if not self.may_continue():
+    #         return
+    #     path = os.path.dirname(ustr(self.file_path)) if self.file_path else '.'
+    #     formats = ['*.pt']
+    #     filters = "Model Files (Yolo Only %s)" % ' '.join(formats + ['*%s' % LabelFile.suffix])
+    #     filename, _ = QFileDialog.getOpenFileName(self, '%s - Choose model file' % __appname__, path, filters)
+    #     if filename:
+    #         if isinstance(filename, (tuple, list)):
+    #             filename = filename[0]
+    #     else:
+    #         return
+    #     self.model_file_path = filename
+    #     self.settings['model_file_path'] = self.model_file_path
 
     def train_model(self, _value=False):
         if not self.may_continue():
             return
-        if self.model_file_path is None:
-            self.error_message('错误', '请先选择模型文件')
-            return
+        # if self.model_file_path is None:
+        #     self.error_message('错误', '请先选择模型文件')
+        #     return
 
         set_train_param = TrainSetParam(self)
         set_train_param.exec_()
@@ -1524,15 +1515,19 @@ class MainWindow(QMainWindow, WindowMixin):
         if not set_train_param.yamlPathLine.text() or not os.path.exists(set_train_param.yamlPathLine.text()):
             self.error_message('错误', '请输入正确的yaml文件路径')
             return
+        if not set_train_param.modelPathLine.text() or not os.path.exists(set_train_param.modelPathLine.text()):
+            self.error_message('错误', '请输入正确的模型文件路径')
+            return
 
         batch_size = int(set_train_param.batchSizeLine.text())
         epochs = int(set_train_param.epochsLine.text())
         yaml_file_path = set_train_param.yamlPathLine.text()
+        model_file_path = set_train_param.modelPathLine.text()
         try:
             train = TrainModel(parent=self, batch_size=batch_size, epochs=epochs,
-                               data=yaml_file_path, weights=self.model_file_path)
-            # self.queue_event(partial(train.run))
+                               data=yaml_file_path, weights=model_file_path)
             train.write_yaml_file()
+            self.queue_event(partial(train.run))
         except AssertionError as e:
             print(e)
             return

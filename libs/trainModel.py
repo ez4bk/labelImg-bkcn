@@ -40,6 +40,7 @@ class TrainModel(object):
         data_yaml = yaml.safe_load(df)
         data_yaml['path'] = sample_path
         classes = cf.readlines()
+        data_yaml['names'] = [''] * len(classes)
         for i in range(len(classes)):
             data_yaml['names'][i] = classes[i].strip()
         df.close()
@@ -47,15 +48,6 @@ class TrainModel(object):
         df = open(self.data, 'w')
         yaml.dump(data_yaml, df)
         df.close()
-
-
-
-
-
-
-
-
-
 
     def validate_params(self):
         try:
@@ -76,7 +68,7 @@ class TrainModel(object):
         if not self.validate_params():
             return
         try:
-            res = subprocess.run(['yolov5', 'train', '--batch-size', self.batch_size, '--epochs', self.epochs,
+            res = subprocess.run(['python', '-m', 'yolov5.train', '--batch-size', self.batch_size, '--epochs', self.epochs,
                                   '--data', self.data, '--weights', self.weights], stdout=subprocess.PIPE, check=True)
         except FileNotFoundError:
             if self.install_yolov5():
